@@ -65,6 +65,38 @@ python3 client.py
 
 Server runs on http://localhost:8001
 
+### 3. Semantic Caching with Redis LangCache Embed v1 (`langcache_embed/`)
+Demonstrates intelligent semantic caching using the Redis LangCache Embed v1 model.
+
+**Features:**
+- Semantic caching based on query similarity
+- Redis LangCache Embed v1 model (768-dimensional embeddings)
+- Configurable similarity thresholds
+- Automatic cache management with FIFO eviction
+- Fast cache hit responses
+- Production-ready caching patterns
+
+**Quick Start:**
+```bash
+# Create and activate virtual environment (if not already done)
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Navigate to example
+cd langcache_embed/
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start server
+python3 server.py
+
+# Test with client
+python3 client.py
+```
+
+Server runs on http://localhost:8002
+
 ## General Setup
 
 1. Create a virtual environment:
