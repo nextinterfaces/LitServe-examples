@@ -19,17 +19,19 @@ class ImageClassifier(ls.LitAPI):
         """Initialize the model and preprocessing pipeline."""
         try:
             logger.info(f"Setting up model on device: {device}")
+            self.device = device  # Store device for later use
+
             # Load pre-trained ResNet model
             self.model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
             self.model.eval()
             self.model.to(device)
-            
+
             # Load ImageNet class labels
             logger.info("Loading ImageNet labels...")
             response = requests.get("https://raw.githubusercontent.com/anishathalye/imagenet-simple-labels/master/imagenet-simple-labels.json")
             response.raise_for_status()
             self.labels = json.loads(response.text)
-            
+
             # Define image preprocessing
             self.transform = transforms.Compose([
                 transforms.Resize(256),
@@ -76,7 +78,7 @@ class ImageClassifier(ls.LitAPI):
                     response = requests.get(url.strip())
                     response.raise_for_status()
                     image = Image.open(io.BytesIO(response.content)).convert('RGB')
-                    
+
                     # Preprocess image
                     processed = self.transform(image)
                     processed_images.append(processed)
@@ -86,10 +88,10 @@ class ImageClassifier(ls.LitAPI):
                 except Exception as e:
                     logger.error(f"Error preprocessing image from {url}: {str(e)}")
                     raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
-            
+
             if not processed_images:
                 raise HTTPException(status_code=400, detail="No images were successfully processed")
-                
+
             return torch.stack(processed_images)
         except HTTPException:
             raise
@@ -101,20 +103,30 @@ class ImageClassifier(ls.LitAPI):
         """Run inference on the images."""
         try:
             logger.info(f"Starting prediction for {len(image_urls)} images")
+            logger.info(f"Image URLs: {image_urls}")
+
+            # Handle case where LitServe wraps the output in another list
+            if len(image_urls) == 1 and isinstance(image_urls[0], list):
+                image_urls = image_urls[0]
+                logger.info(f"Unwrapped nested list, new URLs: {image_urls}")
+
             # Process each image individually
             results = []
             for url in image_urls:
+                logger.info(f"Processing URL: {url} (type: {type(url)})")
                 # Preprocess single image
                 processed = self.preprocess([url])
-                
+                # Move tensor to the same device as the model
+                processed = processed.to(self.device)
+
                 # Run inference
                 with torch.no_grad():
                     outputs = self.model(processed)
                     probabilities = F.softmax(outputs, dim=1)
-                    
+
                     # Get top 5 predictions
                     top5_prob, top5_idx = torch.topk(probabilities, 5)
-                    
+
                     predictions = [
                         {
                             "label": self.labels[idx.item()],
@@ -123,7 +135,7 @@ class ImageClassifier(ls.LitAPI):
                         for prob, idx in zip(top5_prob[0], top5_idx[0])
                     ]
                     results.append({"predictions": predictions})
-            
+
             logger.info(f"Prediction complete, results: {results}")
             return results
         except HTTPException:
@@ -132,13 +144,31 @@ class ImageClassifier(ls.LitAPI):
             logger.error(f"Error during prediction: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    def encode_response(self, output: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def encode_response(self, output: Union[Dict[str, Any], List[Dict[str, Any]]]) -> Dict[str, Any]:
         """Format the response."""
         try:
-            logger.info(f"Encoding response for {len(output)} results")
-            if len(output) == 1:
-                return output[0]
-            return {"batch_results": output}
+            logger.info(f"Output type: {type(output)}, Output: {output}")
+
+            # Handle case where LitServe passes a single dict instead of a list
+            if isinstance(output, dict):
+                logger.info(f"Returning single dict result: {output}")
+                return output
+
+            # Handle list case
+            if isinstance(output, list):
+                logger.info(f"Encoding response for {len(output)} results")
+                if len(output) == 1:
+                    result = output[0]
+                    logger.info(f"Returning single result: {result}")
+                    return result
+                result = {"batch_results": output}
+                logger.info(f"Returning batch result: {result}")
+                return result
+
+            # Fallback
+            logger.error(f"Unexpected output type: {type(output)}")
+            return {"error": "Unexpected output format"}
+
         except Exception as e:
             logger.error(f"Error encoding response: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
@@ -148,4 +178,4 @@ if __name__ == "__main__":
     logger.info("Starting LitServer...")
     classifier = ImageClassifier(max_batch_size=16)
     server = ls.LitServer(classifier, accelerator="auto")  # Use GPU if available
-    server.run(port=8000) 
+    server.run(port=8000)

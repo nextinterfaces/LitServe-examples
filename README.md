@@ -4,7 +4,7 @@ This repository contains examples demonstrating how to use LitServe to serve dif
 
 ## Examples
 
-### 1. Image Classification (Root Directory)
+### 1. Image Classification (`image_classification/`)
 Demonstrates image classification using a pre-trained ResNet model from torchvision.
 
 **Features:**
@@ -19,6 +19,9 @@ Demonstrates image classification using a pre-trained ResNet model from torchvis
 # Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Navigate to example
+cd image_classification/
 
 # Install dependencies
 pip install -r requirements.txt
