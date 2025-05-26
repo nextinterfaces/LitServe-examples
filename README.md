@@ -1,10 +1,6 @@
-# LitServe Examples
+# LitServe Examples - Sentence Transformer Applications
 
-This repository contains examples demonstrating how to use LitServe and related technologies to serve different types of machine learning models and implement various ML-powered features.
-
-## Repository Structure
-
-Each folder in this repository is a self-contained example with its own setup instructions and dependencies. Below is an overview of each example:
+This repository showcases different implementations of Sentence Transformer apps.
 
 ### Common Setup for All Examples
 
@@ -29,70 +25,58 @@ pip install -r requirements.txt
 python3 server.py
 ```
 
-5. Test with the provided client (if available):
+5. Test with the provided client:
 ```bash
-python3 client.py  # or test_client.py
+python3 client.py
 ```
 
-### Available Examples
+## Technologies Used
 
-#### 1. Image Classification (`image_classification/`)
-A demonstration of image classification using a pre-trained ResNet model from torchvision.
+### Server Frameworks
+- **FastAPI**
+- **LitServe**: A lightweight serving framework for ML models. 
 
-**Features:**
-- Fast inference with batching support
-- GPU acceleration when available
-- OpenAPI documentation
-- Health check endpoint
-- Request/response validation
+### Caching Solutions
+- **Semantic Cache**: Implemented to:
+  - Reduce redundant model computations
+  - Handle semantically similar queries
+  - Improve response times for similar questions
+  - Save computational resources
 
-Server runs on http://localhost:8000
+- **Redis Vector Database**: Used as an advanced caching solution with:
+  - HNSW (Hierarchical Navigable Small World) indexing for fast similarity search
+  - Efficient vector storage and retrieval
+  - Scalable and persistent storage
+  - Real-time similarity matching
 
-#### 2. Semantic Similarity Search (`semantic_similarity/`)
-Implementation of text semantic similarity search using sentence transformers.
+## Models Used
+- **redis/langcache-embed-v1**: A sentence transformer model optimized for:
+  - Semantic text embeddings
+  - Cache-friendly representations
+  - Fast similarity computations
+  - Consistent vector dimensions (384)
 
-**Features:**
-- Simple JSON API for text similarity
-- Fast lightweight model (all-MiniLM-L6-v2)
-- Ranked similarity results
-- Cosine similarity calculation
+## Example Structure
 
-Server runs on http://localhost:8001
-
-#### 3. LitServe LangCache (`litserve_langcache/`)
-Demonstrates intelligent semantic caching using LitServe with LangCache integration.
-
-**Features:**
-- Semantic caching based on query similarity
-- Efficient embedding-based caching
-- Configurable similarity thresholds
-- Production-ready caching patterns
-
-#### 4. FastAPI LangCache (`fastapi_langcache/`)
-Shows how to implement semantic caching in a FastAPI application using LangCache.
-
-**Features:**
-- FastAPI integration with LangCache
-- Semantic similarity-based caching
-- RESTful API design
-- Easy-to-follow example for FastAPI users
+1. **01_image_classification**: Basic image classification example
+2. **02_semantic_similarity**: Simple semantic similarity matching
+3. **03_litserve_langcache**: LitServe with basic caching
+4. **04_fastapi_langcache**: FastAPI with in-memory semantic cache
+5. **05_fastapi_langcache_redis_vectordb**: Advanced implementation using Redis vector DB
+6. **06_litserve_langcache_redis**: LitServe with Redis integration
 
 ## Getting Started
 
-1. Clone this repository
-2. Choose an example you want to try
-3. Follow the common setup instructions above
-4. Check the example's specific README or documentation for additional details
+Each example directory contains its own README with specific setup instructions. Generally, you'll need:
 
-## Requirements
+1. Python 3.8+
+2. Redis 7.0+ with RediSearch module (for vector DB examples)
+3. Virtual environment setup
+4. Required Python packages (see individual requirements.txt files)
 
-- Python 3.7+
-- Additional requirements are specified in each example's `requirements.txt`
+## Performance Considerations
 
-## Contributing
+The examples demonstrate different approaches to caching and serving, each with its own trade-offs:
 
-Feel free to contribute additional examples or improvements to existing ones through pull requests.
-
-## License
-
-See individual example directories for specific licensing information.
+- LitServe: Simplified deployment but less customizable
+- FastAPI: More flexible but requires more setup
