@@ -21,7 +21,7 @@ python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Navigate to example
-cd image_classification/
+cd <folder>/
 
 # Install dependencies
 pip install -r requirements.txt

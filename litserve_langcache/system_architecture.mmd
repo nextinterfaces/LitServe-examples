@@ -1,0 +1,77 @@
+graph TB
+    %% Client Layer
+    subgraph "Client Layer"
+        client["Client Applications<br/>HTTP/REST<br/><small>Latency SLO: 200ms</small>"]
+        style client fill:#f5f5f5,stroke:#666,stroke-width:2px
+    end
+
+    %% API Gateway Layer
+    subgraph "API Gateway"
+        lb["Load Balancer<br/><small>Health Check: /health</small>"]
+        api["SemanticCache API<br/>Port: 8002<br/><small>Metrics:<br/>- Request Rate<br/>- Response Time<br/>- Cache Hit Rate</small>"]
+        style lb fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+        style api fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    end
+
+    %% Core Services
+    subgraph "Core Services"
+        model["Redis LangCache Embed v1<br/><small>Resources:<br/>- RAM: 2GB<br/>- GPU: Optional<br/>Metrics:<br/>- Embedding Time<br/>- Model Load Time</small>"]
+        
+        subgraph "Cache System"
+            direction TB
+            cache["In-Memory Cache<br/><small>Config:<br/>- Max Size: 1000<br/>- Eviction: FIFO<br/>Metrics:<br/>- Size<br/>- Eviction Rate</small>"]
+            sim["Similarity Engine<br/><small>Threshold: 0.85<br/>Metrics:<br/>- Avg Similarity<br/>- Match Rate</small>"]
+        end
+        
+        style model fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+        style cache fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+        style sim fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    end
+
+    %% Storage Layer
+    subgraph "Storage Layer"
+        direction LR
+        qstore["Query Store<br/><small>Schema:<br/>- query: string<br/>- response: json<br/>- timestamp: float</small>"]
+        estore["Embedding Store<br/><small>Schema:<br/>- key: string<br/>- vector: float[768]<br/>- timestamp: float</small>"]
+        style qstore fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+        style estore fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+    end
+
+    %% Monitoring & Alerts
+    subgraph "Observability"
+        monitor["Monitoring<br/><small>Alert Conditions:<br/>- Hit Rate < 50%<br/>- Latency > 200ms<br/>- Error Rate > 1%</small>"]
+        style monitor fill:#f8cecc,stroke:#b85450,stroke-width:2px
+    end
+
+    %% Connections
+    client -->|"Request<br/><small>Rate Limit: 100/s</small>"| lb
+    lb -->|"Route"| api
+    api -->|"1. Encode"| model
+    model -->|"2. Vector"| sim
+    sim -->|"3. Search"| cache
+    cache -->|"4. Store"| qstore
+    cache -->|"4. Store"| estore
+    api -->|"Metrics"| monitor
+    model -->|"Metrics"| monitor
+    cache -->|"Metrics"| monitor
+
+    %% Data Flow Annotations
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px
+    classDef critical fill:#f8cecc,stroke:#b85450,stroke-width:2px
+    
+    %% System Notes
+    note["System Notes:<br/>
+    1. Deployment: Docker containers<br/>
+    2. Scaling: Horizontal via API layer<br/>
+    3. Cache: In-memory with Redis backup<br/>
+    4. Recovery: Auto-reload from storage<br/>
+    5. Monitoring: Prometheus + Grafana"]
+    style note fill:#f5f5f5,stroke:#666,stroke-width:1px,stroke-dasharray: 5 5
+
+    %% Performance Characteristics
+    perf["Performance Profile:<br/>
+    - Avg Response: 50ms<br/>
+    - Cache Hit Rate: ~85%<br/>
+    - Memory Usage: ~4GB<br/>
+    - Throughput: 2000 req/min"]
+    style perf fill:#f5f5f5,stroke:#666,stroke-width:1px,stroke-dasharray: 5 5 

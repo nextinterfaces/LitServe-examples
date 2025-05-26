@@ -53,7 +53,6 @@ pip install -r requirements.txt
 Start the server:
 ```bash
 # Make sure virtual environment is activated
-source ../venv/bin/activate  # On Windows: ..\venv\Scripts\activate
 python3 server.py
 ```
 

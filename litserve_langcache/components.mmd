@@ -1,0 +1,37 @@
+graph TB
+    subgraph Client Components
+        client[Client Application]
+        testClient[Test Client]
+        style client fill:#e1d5e7,stroke:#9673a6
+        style testClient fill:#e1d5e7,stroke:#9673a6
+    end
+
+    subgraph Server Components
+        api[SemanticCache API]
+        model[Redis LangCache Embed v1]
+        cache[In-Memory Cache]
+        style api fill:#dae8fc,stroke:#6c8ebf
+        style model fill:#d5e8d4,stroke:#82b366
+        style cache fill:#fff2cc,stroke:#d6b656
+    end
+
+    subgraph Cache Storage
+        queries[Query Cache]
+        embeddings[Embeddings Cache]
+        style queries fill:#ffe6cc,stroke:#d79b00
+        style embeddings fill:#ffe6cc,stroke:#d79b00
+    end
+
+    client --> |HTTP Requests| api
+    testClient --> |Test Requests| api
+    api --> |Encode Text| model
+    model --> |768d Embeddings| api
+    api --> |Store/Retrieve| cache
+    
+    cache --> |Store| queries
+    cache --> |Store| embeddings
+    queries --> |Lookup| cache
+    embeddings --> |Similarity Search| cache
+
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px
+    classDef interface fill:#f9f,stroke:#333,stroke-width:2px 

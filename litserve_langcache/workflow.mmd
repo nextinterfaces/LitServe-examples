@@ -1,0 +1,34 @@
+graph TD
+    A[Client Request] --> B[Decode Request]
+    B --> C{Use Cache?}
+    
+    C -->|Yes| D[Generate Query Embedding]
+    C -->|No| J[Generate New Response]
+    
+    D --> E[Search Cache]
+    E --> F{Similarity > Threshold?}
+    
+    F -->|Yes| G[Return Cached Response]
+    F -->|No| J
+    
+    J --> K[Generate Response Embedding]
+    K --> L[Add to Cache]
+    L --> M[Return New Response]
+    
+    subgraph Cache Management
+        N[Check Cache Size]
+        O{Cache Full?}
+        P[Remove Oldest Entry]
+        
+        N --> O
+        O -->|Yes| P
+        O -->|No| Q[Store New Entry]
+        P --> Q
+    end
+    
+    L --> N
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style G fill:#bfb,stroke:#333,stroke-width:2px
+    style M fill:#bfb,stroke:#333,stroke-width:2px
+    style J fill:#fbb,stroke:#333,stroke-width:2px 
