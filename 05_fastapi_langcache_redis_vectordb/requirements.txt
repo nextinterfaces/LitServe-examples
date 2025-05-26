@@ -1,0 +1,10 @@
+fastapi==0.109.2
+uvicorn==0.27.1
+redis==5.0.1
+sentence-transformers==2.5.1
+numpy==1.26.4
+aiohttp==3.9.3
+rich==13.7.0
+pydantic==2.6.1
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch>=2.1.0 
